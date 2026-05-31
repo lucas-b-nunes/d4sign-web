@@ -19,8 +19,6 @@ export function CredentialsForm({
   const { t } = useI18n();
   const [tokenApi, setTokenApi] = useState("");
   const [cryptKey, setCryptKey] = useState("");
-  const [hmacSecret, setHmacSecret] = useState("");
-  const [defaultSafeUuid, setDefaultSafeUuid] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function save() {
@@ -34,8 +32,6 @@ export function CredentialsForm({
           body: JSON.stringify({
             tokenApi,
             cryptKey: cryptKey || undefined,
-            hmacSecret: hmacSecret || undefined,
-            defaultSafeUuid: defaultSafeUuid || undefined,
           }),
         },
       );
@@ -79,6 +75,7 @@ export function CredentialsForm({
           {initialConfigured
             ? "Credenciais já configuradas. Informe novamente apenas para alterar."
             : "Informe o token da API D4Sign (sandbox ou produção)."}
+          {" "}Após salvar, vá em <strong>Globais</strong> para selecionar o cofre padrão.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 max-w-lg">
@@ -100,23 +97,6 @@ export function CredentialsForm({
             type="password"
             value={cryptKey}
             onChange={(e) => setCryptKey(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="hmac">HMAC Secret (webhooks)</Label>
-          <Input
-            id="hmac"
-            type="password"
-            value={hmacSecret}
-            onChange={(e) => setHmacSecret(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="safe">Cofre padrão (UUID)</Label>
-          <Input
-            id="safe"
-            value={defaultSafeUuid}
-            onChange={(e) => setDefaultSafeUuid(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
