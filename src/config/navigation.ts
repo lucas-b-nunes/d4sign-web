@@ -4,7 +4,6 @@ import {
   FileText,
   FileSignature,
   LayoutDashboard,
-  Link2,
   Settings,
   HelpCircle,
   BookOpen,
@@ -25,12 +24,6 @@ export const mainNav: NavItem[] = [
     label: "Dashboard",
     href: (m) => `/bitrix/dashboard/${encodeURIComponent(m)}`,
     icon: LayoutDashboard,
-  },
-  {
-    id: "integrations",
-    label: "Integrações",
-    href: (m) => `/bitrix/settings/${encodeURIComponent(m)}/connection`,
-    icon: Link2,
   },
   {
     id: "templates",

@@ -3,7 +3,7 @@ import { SettingsNav } from "@/components/features/setup/settings-nav";
 import { SafeSelectorForm } from "@/components/features/setup/safe-selector-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchTenant } from "@/lib/tenant-api";
-import { getApiBase, apiUrl } from "@/lib/api-client";
+import { apiUrl } from "@/lib/api-client";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,6 @@ export default async function GlobalsPage({
   const tenant = await fetchTenant(member_id);
   if (!tenant) notFound();
 
-  const apiBase = getApiBase();
   const { safes, currentSafeUuid } = tenant.d4signConfigured
     ? await fetchSafes(member_id)
     : { safes: [], currentSafeUuid: null };
@@ -74,11 +73,9 @@ export default async function GlobalsPage({
         <CardHeader>
           <CardTitle>Webhook D4Sign</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <p>Registre esta URL no D4Sign para receber notificações de assinatura:</p>
-          <code className="mt-1 block rounded bg-muted px-2 py-1 text-xs">
-            {apiBase}/api/webhooks/d4sign
-          </code>
+        <CardContent className="text-sm text-muted-foreground space-y-1">
+          <p>O webhook é configurado <strong>automaticamente</strong> em cada documento gerado pelo robô BizProc.</p>
+          <p className="text-xs">Nenhuma configuração manual é necessária.</p>
         </CardContent>
       </Card>
     </AppShell>
