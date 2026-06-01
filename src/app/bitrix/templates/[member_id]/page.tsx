@@ -20,6 +20,12 @@ type SavedMapping = {
   mappings: Record<string, string>;
 };
 
+type DealField = {
+  code: string;
+  title: string;
+  type: string;
+};
+
 async function fetchTemplates(memberId: string): Promise<D4SignTemplate[]> {
   try {
     const res = await fetch(
@@ -48,6 +54,20 @@ async function fetchMappings(memberId: string): Promise<SavedMapping[]> {
   }
 }
 
+async function fetchDealFields(memberId: string): Promise<DealField[]> {
+  try {
+    const res = await fetch(
+      apiUrl(`/api/bitrix/deal-fields?memberId=${encodeURIComponent(memberId)}`),
+      { cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { fields: DealField[] };
+    return data.fields ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function TemplatesPage({
   params,
 }: {
@@ -57,9 +77,9 @@ export default async function TemplatesPage({
   const tenant = await fetchTenant(member_id);
   if (!tenant) notFound();
 
-  const [templates, mappings] = tenant.d4signConfigured
-    ? await Promise.all([fetchTemplates(member_id), fetchMappings(member_id)])
-    : [[], []];
+  const [templates, mappings, dealFields] = tenant.d4signConfigured
+    ? await Promise.all([fetchTemplates(member_id), fetchMappings(member_id), fetchDealFields(member_id)])
+    : [[], [], []];
 
   const mappingsByTemplateId = Object.fromEntries(
     mappings.map((m) => [m.templateId, m]),
@@ -104,6 +124,7 @@ export default async function TemplatesPage({
               memberId={member_id}
               template={template}
               saved={mappingsByTemplateId[template.id]}
+              dealFields={dealFields}
             />
           ))}
         </div>

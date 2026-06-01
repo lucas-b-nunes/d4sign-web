@@ -78,5 +78,4 @@ export const settingsNav = [
   { slug: "credentials", label: "Credenciais D4Sign" },
   { slug: "globals", label: "Parâmetros globais" },
   { slug: "preferences", label: "Preferências" },
-  { slug: "legacy", label: "Bridge legado" },
 ] as const;

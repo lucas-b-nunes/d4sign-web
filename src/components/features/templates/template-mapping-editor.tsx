@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiUrl } from "@/lib/api-client";
 
@@ -18,6 +17,12 @@ type SavedMapping = {
   templateId: string;
   templateName: string;
   mappings: Record<string, string>;
+};
+
+type DealField = {
+  code: string;
+  title: string;
+  type: string;
 };
 
 /** Extrai lista plana de variáveis do template (tanto HTML quanto Word) */
@@ -38,10 +43,12 @@ export function TemplateMappingEditor({
   memberId,
   template,
   saved,
+  dealFields,
 }: {
   memberId: string;
   template: D4SignTemplate;
   saved: SavedMapping | undefined;
+  dealFields: DealField[];
 }) {
   const variables = extractVariables(template.variables);
   const [mappings, setMappings] = useState<Record<string, string>>(
@@ -115,20 +122,24 @@ export function TemplateMappingEditor({
           ) : (
             <>
               <p className="text-xs text-muted-foreground">
-                Para cada variável do template, informe o nome do campo do CRM Bitrix que contém o valor
-                (ex: <code>TITLE</code>, <code>UF_CRM_1_NOME</code>, <code>CONTACT_EMAIL</code>).
+                Para cada variável do template, selecione o campo do Deal Bitrix que contém o valor.
               </p>
               <div className="grid gap-3">
                 {variables.map((variable) => (
                   <div key={variable} className="grid grid-cols-2 items-center gap-3">
-                    <label className="text-sm font-mono">
-                      {variable}
-                    </label>
-                    <Input
-                      placeholder="campo Bitrix CRM"
+                    <label className="text-sm font-mono">{variable}</label>
+                    <select
                       value={mappings[variable] ?? ""}
                       onChange={(e) => setMapping(variable, e.target.value)}
-                    />
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">— selecione o campo —</option>
+                      {dealFields.map((f) => (
+                        <option key={f.code} value={f.code}>
+                          {f.title} ({f.code})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 ))}
               </div>
