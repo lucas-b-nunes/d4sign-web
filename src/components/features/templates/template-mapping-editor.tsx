@@ -58,6 +58,7 @@ export function TemplateMappingEditor({
     saved?.mappings ?? {},
   );
   const [documentName, setDocumentName] = useState(saved?.documentName ?? "");
+  const [docNameMode, setDocNameMode] = useState<"text" | "field">("text");
   const [signers, setSigners] = useState<string[]>(
     saved?.signersEmails && saved.signersEmails.length > 0
       ? saved.signersEmails
@@ -147,15 +148,52 @@ export function TemplateMappingEditor({
 
           {/* Nome do documento */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Nome do documento</label>
-            <Input
-              placeholder="Ex: Contrato {=Document:TITLE}"
-              value={documentName}
-              onChange={(e) => setDocumentName(e.target.value)}
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Nome do documento</label>
+              <div className="flex rounded-md border text-xs overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setDocNameMode("text")}
+                  className={`px-3 py-1 transition-colors ${docNameMode === "text" ? "bg-[var(--bitrix-primary-dark)] text-white" : "hover:bg-muted"}`}
+                >
+                  Texto livre
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDocNameMode("field")}
+                  className={`px-3 py-1 transition-colors ${docNameMode === "field" ? "bg-[var(--bitrix-primary-dark)] text-white" : "hover:bg-muted"}`}
+                >
+                  Campo Bitrix
+                </button>
+              </div>
+            </div>
+
+            {docNameMode === "text" ? (
+              <Input
+                placeholder="Ex: Contrato {=Document:TITLE}"
+                value={documentName}
+                onChange={(e) => setDocumentName(e.target.value)}
+              />
+            ) : (
+              <select
+                value={documentName}
+                onChange={(e) => setDocumentName(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">— selecione o campo —</option>
+                {dealFields.map((f) => (
+                  <option key={f.code} value={`{=Document:${f.code}}`}>
+                    {f.title} ({f.code})
+                  </option>
+                ))}
+              </select>
+            )}
+
             <p className="text-xs text-muted-foreground">
-              Nome que o documento receberá no D4Sign. Use variáveis Bitrix como{" "}
-              <code className="rounded bg-muted px-1">{"{=Document:TITLE}"}</code>.
+              {docNameMode === "text"
+                ? <>Texto livre. Você pode combinar texto fixo com variáveis Bitrix, ex: <code className="rounded bg-muted px-1">{"Contrato {=Document:TITLE}"}</code></>
+                : "Selecione um campo do Deal — o valor real será usado como nome do documento."
+              }
             </p>
           </div>
 
