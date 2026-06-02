@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TemplateMappingEditor } from "@/components/features/templates/template-mapping-editor";
+import { SyncRobotButton } from "@/components/features/templates/sync-robot-button";
 import { fetchTenant } from "@/lib/tenant-api";
 import { apiUrl } from "@/lib/api-client";
 import { notFound } from "next/navigation";
@@ -17,6 +18,8 @@ type D4SignTemplate = {
 type SavedMapping = {
   templateId: string;
   templateName: string;
+  documentName?: string | null;
+  signersEmails?: string[];
   mappings: Record<string, string>;
 };
 
@@ -117,6 +120,7 @@ export default async function TemplatesPage({
             <h2 className="text-sm font-medium text-muted-foreground">
               {templates.length} template(s) encontrado(s) — clique para configurar o mapeamento de campos
             </h2>
+            <SyncRobotButton memberId={member_id} />
           </div>
           {templates.map((template) => (
             <TemplateMappingEditor

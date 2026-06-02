@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiUrl } from "@/lib/api-client";
 
@@ -16,6 +17,8 @@ type D4SignTemplate = {
 type SavedMapping = {
   templateId: string;
   templateName: string;
+  documentName?: string | null;
+  signersEmails?: string[];
   mappings: Record<string, string>;
 };
 
@@ -54,6 +57,12 @@ export function TemplateMappingEditor({
   const [mappings, setMappings] = useState<Record<string, string>>(
     saved?.mappings ?? {},
   );
+  const [documentName, setDocumentName] = useState(saved?.documentName ?? "");
+  const [signers, setSigners] = useState<string[]>(
+    saved?.signersEmails && saved.signersEmails.length > 0
+      ? saved.signersEmails
+      : [""],
+  );
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -61,7 +70,25 @@ export function TemplateMappingEditor({
     setMappings((prev) => ({ ...prev, [variable]: value }));
   }
 
+  function addSigner() {
+    setSigners((prev) => [...prev, ""]);
+  }
+
+  function removeSigner(index: number) {
+    setSigners((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateSigner(index: number, value: string) {
+    setSigners((prev) => prev.map((s, i) => (i === index ? value : s)));
+  }
+
   async function save() {
+    const validSigners = signers.map((s) => s.trim()).filter(Boolean);
+    if (validSigners.length === 0) {
+      toast.error("Adicione pelo menos um e-mail de signatário");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(
@@ -74,6 +101,8 @@ export function TemplateMappingEditor({
           body: JSON.stringify({
             templateName: template.name,
             mappings,
+            documentName: documentName || null,
+            signersEmails: validSigners,
           }),
         },
       );
@@ -114,13 +143,60 @@ export function TemplateMappingEditor({
       </CardHeader>
 
       {open && (
-        <CardContent className="space-y-4">
-          {variables.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Template sem variáveis.
+        <CardContent className="space-y-6">
+
+          {/* Nome do documento */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Nome do documento</label>
+            <Input
+              placeholder="Ex: Contrato {=Document:TITLE}"
+              value={documentName}
+              onChange={(e) => setDocumentName(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Nome que o documento receberá no D4Sign. Use variáveis Bitrix como{" "}
+              <code className="rounded bg-muted px-1">{"{=Document:TITLE}"}</code>.
             </p>
-          ) : (
-            <>
+          </div>
+
+          {/* Signatários */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Signatários</label>
+            <div className="space-y-2">
+              {signers.map((email, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Input
+                    type="email"
+                    placeholder="email@empresa.com"
+                    value={email}
+                    onChange={(e) => updateSigner(index, e.target.value)}
+                    className="flex-1"
+                  />
+                  {signers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSigner(index)}
+                      className="text-red-400 hover:text-red-600 text-sm px-2"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addSigner}
+              className="text-sm text-[var(--bitrix-primary-dark)] hover:underline"
+            >
+              + Adicionar signatário
+            </button>
+          </div>
+
+          {/* Mapeamento de variáveis */}
+          {variables.length > 0 && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Mapeamento de variáveis</label>
               <p className="text-xs text-muted-foreground">
                 Para cada variável do template, selecione o campo do Deal Bitrix que contém o valor.
               </p>
@@ -143,16 +219,17 @@ export function TemplateMappingEditor({
                   </div>
                 ))}
               </div>
-              <Button
-                type="button"
-                variant="accent"
-                onClick={() => void save()}
-                disabled={loading}
-              >
-                Salvar mapeamento
-              </Button>
-            </>
+            </div>
           )}
+
+          <Button
+            type="button"
+            variant="accent"
+            onClick={() => void save()}
+            disabled={loading}
+          >
+            Salvar mapeamento
+          </Button>
         </CardContent>
       )}
     </Card>
