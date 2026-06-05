@@ -8,7 +8,18 @@ import { Bx24Provider } from "@/lib/bx24/provider";
 import { I18nProvider } from "@/lib/i18n/provider";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30_000,
+            gcTime: 5 * 60_000,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  );
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

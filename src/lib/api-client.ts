@@ -1,10 +1,18 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const PUBLIC_API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const INTERNAL_API_BASE =
+  process.env.API_INTERNAL_URL?.replace(/\/$/, "") ?? PUBLIC_API_BASE;
 
 export function getApiBase(): string {
-  if (!API_BASE) {
+  if (!PUBLIC_API_BASE) {
     throw new Error("NEXT_PUBLIC_API_URL não está definido");
   }
-  return API_BASE;
+  // SSR: preferir URL interna (localhost) para evitar round-trip via ngrok
+  const isServer = typeof window === "undefined";
+  const base = isServer && INTERNAL_API_BASE ? INTERNAL_API_BASE : PUBLIC_API_BASE;
+  if (!base) {
+    throw new Error("URL da API não configurada");
+  }
+  return base;
 }
 
 export function apiUrl(path: string): string {

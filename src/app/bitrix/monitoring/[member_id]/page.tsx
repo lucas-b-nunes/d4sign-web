@@ -11,10 +11,11 @@ export default async function MonitoringPage({
   params: Promise<{ member_id: string }>;
 }) {
   const { member_id } = await params;
-  const tenant = await fetchTenant(member_id);
+  const [tenant, documents] = await Promise.all([
+    fetchTenant(member_id),
+    fetchTenantDocuments(member_id),
+  ]);
   if (!tenant) notFound();
-
-  const documents = await fetchTenantDocuments(member_id);
 
   return (
     <AppShell
