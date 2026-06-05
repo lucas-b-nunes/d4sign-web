@@ -79,7 +79,7 @@ export const documentationContent: Record<Locale, DocumentationContent> = {
         ],
         bullets: [
           "Nome do documento: texto livre (com variáveis Bitrix, ex. {=Document:TITLE}) ou campo do Deal",
-          "Signatários: lista de e-mails fixos — obrigatório pelo menos um por template",
+          "Signatários: três modos por signatário — e-mail fixo, contatos vinculados ao negócio ({=Contact:all}) ou campo do Deal com e-mail ({=Document:CAMPO}); obrigatório pelo menos um por template",
           "Mapeamento de variáveis: cada variável do template → campo do Deal (ex. razao_social → COMPANY_TITLE)",
           "Após salvar, use Sincronizar robô para que o select do BizProc liste os templates mapeados",
         ],
@@ -208,7 +208,7 @@ export const documentationContent: Record<Locale, DocumentationContent> = {
         ],
         bullets: [
           "Document name: free text (with Bitrix variables, e.g. {=Document:TITLE}) or a Deal field",
-          "Signers: fixed email list — at least one required per template",
+          "Signers: three modes per signer — fixed email, linked Deal contacts ({=Contact:all}), or Deal field with email ({=Document:FIELD}); at least one required per template",
           "Variable mapping: each template variable → Deal field (e.g. razao_social → COMPANY_TITLE)",
           "After saving, use Sync robot so the BizProc select lists mapped templates",
         ],

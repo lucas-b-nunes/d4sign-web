@@ -20,6 +20,12 @@ import { apiUrl } from "@/lib/api-client";
 import { useI18n } from "@/lib/i18n/provider";
 import { formatMessage } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
+import {
+  initSignerRows,
+  serializeSignerSpec,
+  type SignerMode,
+  type SignerRow,
+} from "@/lib/signer-spec";
 
 type D4SignTemplate = {
   id: string;
@@ -97,8 +103,8 @@ export function TemplateMappingEditor({
   const [mappings, setMappings] = useState<Record<string, string>>(saved?.mappings ?? {});
   const [documentName, setDocumentName] = useState(saved?.documentName ?? "");
   const [docNameMode, setDocNameMode] = useState<"text" | "field">("text");
-  const [signers, setSigners] = useState<string[]>(
-    saved?.signersEmails && saved.signersEmails.length > 0 ? saved.signersEmails : [""],
+  const [signerRows, setSignerRows] = useState<SignerRow[]>(
+    initSignerRows(saved?.signersEmails),
   );
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(defaultOpen);
@@ -113,21 +119,52 @@ export function TemplateMappingEditor({
   }
 
   function addSigner() {
-    setSigners((prev) => [...prev, ""]);
+    setSignerRows((prev) => [...prev, { mode: "free", freeEmail: "", fieldToken: "" }]);
   }
 
   function removeSigner(index: number) {
-    setSigners((prev) => prev.filter((_, i) => i !== index));
+    setSignerRows((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function updateSigner(index: number, value: string) {
-    setSigners((prev) => prev.map((s, i) => (i === index ? value : s)));
+  function setSignerMode(index: number, mode: SignerMode) {
+    setSignerRows((prev) =>
+      prev.map((row, i) =>
+        i === index
+          ? {
+              mode,
+              freeEmail: mode === "free" ? row.freeEmail : "",
+              fieldToken: mode === "field" ? row.fieldToken : "",
+            }
+          : row,
+      ),
+    );
+  }
+
+  function updateSignerFreeEmail(index: number, value: string) {
+    setSignerRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, freeEmail: value } : row)),
+    );
+  }
+
+  function updateSignerFieldToken(index: number, value: string) {
+    setSignerRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, fieldToken: value } : row)),
+    );
   }
 
   async function save() {
-    const validSigners = signers.map((s) => s.trim()).filter(Boolean);
+    const validSigners = signerRows
+      .map((row) => serializeSignerSpec(row))
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     if (validSigners.length === 0) {
       toast.error(tp.signerRequired);
+      return;
+    }
+
+    if (signerRows.some((row) => row.mode === "field" && !row.fieldToken.trim())) {
+      toast.error(tp.signerFieldRequired);
       return;
     }
 
@@ -297,26 +334,76 @@ export function TemplateMappingEditor({
           </SectionBlock>
 
           <SectionBlock icon={Users} title={tp.sectionSigners}>
-            <div className="space-y-2">
-              {signers.map((email, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    type="email"
-                    placeholder="email@empresa.com"
-                    value={email}
-                    onChange={(e) => updateSigner(index, e.target.value)}
-                    className="flex-1 bg-card"
-                  />
-                  {signers.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeSigner(index)}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
-                      aria-label="Remove signer"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
+            <div className="space-y-3">
+              {signerRows.map((row, index) => (
+                <div key={index} className="space-y-2 rounded-lg border bg-card p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {formatMessage(tp.signerNumber, { n: index + 1 })}
+                    </span>
+                    {signerRows.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSigner(index)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                        aria-label="Remove signer"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="inline-flex flex-wrap rounded-lg border bg-background p-0.5 text-xs">
+                    {(
+                      [
+                        ["free", tp.signerModeFree],
+                        ["contacts", tp.signerModeContacts],
+                        ["field", tp.signerModeDealField],
+                      ] as const
+                    ).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setSignerMode(index, mode)}
+                        className={cn(
+                          "rounded-md px-2.5 py-1.5 transition-colors",
+                          row.mode === mode
+                            ? "bg-[var(--bitrix-primary-dark)] text-white shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {row.mode === "free" ? (
+                    <Input
+                      type="email"
+                      placeholder="email@empresa.com"
+                      value={row.freeEmail}
+                      onChange={(e) => updateSignerFreeEmail(index, e.target.value)}
+                      className="bg-card"
+                    />
+                  ) : null}
+                  {row.mode === "contacts" ? (
+                    <p className="text-xs text-muted-foreground">{tp.signerContactsHint}</p>
+                  ) : null}
+                  {row.mode === "field" ? (
+                    <>
+                      <select
+                        value={row.fieldToken}
+                        onChange={(e) => updateSignerFieldToken(index, e.target.value)}
+                        className={selectClass}
+                      >
+                        <option value="">{tp.selectField}</option>
+                        {dealFields.map((f) => (
+                          <option key={f.code} value={`{=Document:${f.code}}`}>
+                            {f.title} ({f.code})
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground">{tp.signerFieldHint}</p>
+                    </>
+                  ) : null}
                 </div>
               ))}
             </div>

@@ -122,6 +122,15 @@ export const messages = {
       signers: "Signatários",
       addSigner: "Adicionar signatário",
       signerRequired: "Adicione pelo menos um e-mail de signatário",
+      signerModeFree: "E-mail fixo",
+      signerModeContacts: "Contatos vinculados",
+      signerModeDealField: "Campo do negócio",
+      signerContactsHint:
+        "Todos os contatos vinculados ao negócio (Deal) serão adicionados como signatários.",
+      signerFieldHint:
+        "Selecione um campo do Deal que contenha o e-mail do signatário.",
+      signerFieldRequired: "Selecione o campo do negócio para o signatário",
+      signerNumber: "Signatário {n}",
       mappingTitle: "Mapeamento de variáveis",
       mappingHint:
         "Para cada variável do template, selecione o campo do Deal Bitrix que contém o valor.",
@@ -318,6 +327,15 @@ export const messages = {
       signers: "Signers",
       addSigner: "Add signer",
       signerRequired: "Add at least one signer email",
+      signerModeFree: "Fixed email",
+      signerModeContacts: "Linked contacts",
+      signerModeDealField: "Deal field",
+      signerContactsHint:
+        "All contacts linked to the Deal will be added as signers.",
+      signerFieldHint:
+        "Select a Deal field that contains the signer's email.",
+      signerFieldRequired: "Select the Deal field for the signer",
+      signerNumber: "Signer {n}",
       mappingTitle: "Variable mapping",
       mappingHint:
         "For each template variable, select the Bitrix Deal field that contains the value.",
