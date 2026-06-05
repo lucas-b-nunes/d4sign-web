@@ -18,12 +18,12 @@ export function AppHeader({
   const { t } = useI18n();
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
+    <header className="flex h-14 items-center justify-between border-b border-[var(--shell-border)] bg-[var(--shell-bg)] px-6 text-white">
       <div>
         {breadcrumbs?.length ? (
-          <p className="text-xs text-muted-foreground">{breadcrumbs.join(" / ")}</p>
+          <p className="text-xs text-[var(--shell-text-muted)]">{breadcrumbs.join(" / ")}</p>
         ) : null}
-        <h1 className="text-lg font-semibold">{title}</h1>
+        <h1 className="text-lg font-semibold text-white">{title}</h1>
       </div>
       <div className="flex items-center gap-3">
         <Badge variant={bitrixConnected ? "success" : "warning"}>
@@ -32,7 +32,7 @@ export function AppHeader({
         <Badge variant={d4signConnected ? "success" : "muted"}>
           D4Sign {d4signConnected ? t.connected : t.disconnected}
         </Badge>
-        <LanguageDropdown />
+        <LanguageDropdown dark />
       </div>
     </header>
   );

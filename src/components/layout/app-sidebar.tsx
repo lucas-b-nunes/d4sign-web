@@ -14,12 +14,12 @@ export function AppSidebar({ memberId }: { memberId: string }) {
 
   return (
     <aside
-      className="flex w-[var(--sidebar-width)] shrink-0 flex-col border-r border-border bg-card"
+      className="flex w-[var(--sidebar-width)] shrink-0 flex-col border-r border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--shell-text)]"
       style={{ minHeight: "100vh" }}
     >
-      <div className="border-b border-border p-4">
-        <p className="text-sm font-semibold text-[var(--bitrix-primary-dark)]">D4Sign</p>
-        <p className="text-xs text-muted-foreground">{t.appName}</p>
+      <div className="border-b border-[var(--shell-border)] p-4">
+        <p className="text-sm font-semibold text-white">D4Sign</p>
+        <p className="text-xs text-[var(--shell-text-muted)]">{t.appName}</p>
       </div>
       <nav className="flex flex-1 flex-col gap-0.5 p-2">
         {mainNav.map((item) => {
@@ -31,8 +31,8 @@ export function AppSidebar({ memberId }: { memberId: string }) {
             "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
             item.disabled && "pointer-events-none opacity-50",
             active
-              ? "bg-[var(--bitrix-primary)]/15 text-[var(--bitrix-primary-dark)] font-medium"
-              : "text-foreground hover:bg-muted",
+              ? "bg-[var(--shell-active)] font-medium text-white"
+              : "text-[var(--shell-text-muted)] hover:bg-[var(--shell-hover)] hover:text-white",
           );
           const content = (
             <>
