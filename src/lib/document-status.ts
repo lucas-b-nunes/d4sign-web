@@ -18,6 +18,19 @@ export function normalizeDocStatusLabel(status: string | null | undefined): stri
   return CANONICAL_STATUS_LABELS[trimmed] ?? trimmed;
 }
 
+function parsePartialSignedStatus(
+  status: string,
+): { signed: number; total: number } | null {
+  const match = status.trim().match(/^Assinado\s*\((\d+)\/(\d+)\)$/i);
+  if (!match) return null;
+
+  const signed = Number.parseInt(match[1], 10);
+  const total = Number.parseInt(match[2], 10);
+  if (!Number.isFinite(signed) || !Number.isFinite(total) || total < 1) return null;
+
+  return { signed, total };
+}
+
 export function categorizeDocumentStatus(
   statusName: string | null | undefined,
   statusId?: number | null,
@@ -28,9 +41,11 @@ export function categorizeDocumentStatus(
   const normalized = normalizeDocStatusLabel(statusName);
   const s = normalized.toLowerCase();
 
+  if (parsePartialSignedStatus(normalized)) return "waiting";
+
   if (/cancel/i.test(s)) return "canceled";
   if (/finaliz|finished|conclu|complet/i.test(s)) return "signed";
-  if (s === "assinado" || s === "signed") return "signed";
+  if (s === "assinado" || s === "signed") return "waiting";
   if (/aguard|wait|pendente|pending|process|e-mail não entregue|email not sent/i.test(s)) {
     return "waiting";
   }
