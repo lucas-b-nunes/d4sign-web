@@ -139,10 +139,8 @@ export const documentationContent: Record<Locale, DocumentationContent> = {
         title: "Solução de problemas",
         paragraphs: ["Problemas comuns e o que verificar:"],
         bullets: [
-          "Robô retorna 401: reinstale o app ou verifique auth.member_id no payload Bitrix",
+          "Robô retorna 401: reinstale o app  Bitrix",
           "Erro ao criar documento: confira mapeamento do template, cofre padrão e credenciais D4Sign",
-          "Template Word com erro de ID: a API usa endpoint makedocumentbytemplateword automaticamente",
-          "Webhook não atualiza Deal: confira PUBLIC_APP_URL (ngrok em dev), campos globais e logs [webhook-d4sign]",
           "Select do robô vazio: salve mapeamentos em Templates e clique em Sincronizar robô no Bitrix",
           "PDF não anexado: confirme campo tipo arquivo em Parâmetros Globais e documento finalizado na D4Sign",
         ],
