@@ -20,12 +20,12 @@ export function AppSidebar({ memberId }: { memberId: string }) {
     >
       <div className="border-b border-border p-4">
         <Image
-          src="/logo-d4sign.png"
+          src="/logo-d4sign.svg"
           alt="D4Sign"
-          width={132}
-          height={36}
+          width={130}
+          height={28}
           priority
-          className="h-9 w-auto invert"
+          className="h-7 w-auto dark:invert"
         />
         <p className="mt-2 text-xs text-muted-foreground">{t.appName}</p>
       </div>
