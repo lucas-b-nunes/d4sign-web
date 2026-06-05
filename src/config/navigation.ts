@@ -39,7 +39,7 @@ export const mainNav: NavItem[] = [
   },
   {
     id: "docs",
-    href: () => "https://docapi.d4sign.com.br/docs",
+    href: (m) => `/bitrix/docs/${encodeURIComponent(m)}`,
     icon: BookOpen,
   },
   {

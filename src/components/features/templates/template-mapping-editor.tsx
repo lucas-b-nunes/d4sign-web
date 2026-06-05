@@ -1,13 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  ChevronDown,
+  FileText,
+  Users,
+  Link2,
+  CheckCircle2,
+  Circle,
+  Plus,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiUrl } from "@/lib/api-client";
 import { useI18n } from "@/lib/i18n/provider";
 import { formatMessage } from "@/lib/i18n/messages";
+import { cn } from "@/lib/utils";
 
 type D4SignTemplate = {
   id: string;
@@ -30,6 +42,9 @@ type DealField = {
   type: string;
 };
 
+const selectClass =
+  "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-[var(--bitrix-primary)]/40";
+
 function extractVariables(variables: D4SignTemplate["variables"]): string[] {
   if (Array.isArray(variables)) return variables.filter(Boolean);
   const all: string[] = [];
@@ -43,16 +58,38 @@ function extractVariables(variables: D4SignTemplate["variables"]): string[] {
   return all;
 }
 
+function SectionBlock({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Icon className="h-4 w-4 text-[var(--bitrix-primary-dark)]" />
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export function TemplateMappingEditor({
   memberId,
   template,
   saved,
   dealFields,
+  defaultOpen = false,
 }: {
   memberId: string;
   template: D4SignTemplate;
   saved: SavedMapping | undefined;
   dealFields: DealField[];
+  defaultOpen?: boolean;
 }) {
   const { t } = useI18n();
   const tp = t.templates;
@@ -64,7 +101,12 @@ export function TemplateMappingEditor({
     saved?.signersEmails && saved.signersEmails.length > 0 ? saved.signersEmails : [""],
   );
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
+
+  const mappedVarCount = useMemo(
+    () => variables.filter((v) => Boolean(mappings[v])).length,
+    [variables, mappings],
+  );
 
   function setMapping(variable: string, value: string) {
     setMappings((prev) => ({ ...prev, [variable]: value }));
@@ -116,46 +158,103 @@ export function TemplateMappingEditor({
   }
 
   const isMapped = saved !== undefined;
+  const typeLabel = template.type?.toUpperCase() ?? "WORD";
 
   return (
-    <Card>
-      <CardHeader className="cursor-pointer select-none" onClick={() => setOpen((o) => !o)}>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">{template.name}</CardTitle>
-            <CardDescription>
-              {tp.id}: <code className="text-xs">{template.id}</code> · {tp.type}: {template.type} ·{" "}
-              {formatMessage(tp.variables, { count: variables.length })}
-            </CardDescription>
+    <Card
+      className={cn(
+        "overflow-hidden transition-shadow hover:shadow-md",
+        isMapped
+          ? "border-l-4 border-l-emerald-500"
+          : "border-l-4 border-l-amber-400",
+        open && "ring-1 ring-[var(--bitrix-primary)]/20",
+      )}
+    >
+      <CardHeader
+        className="cursor-pointer select-none pb-4 hover:bg-muted/20 transition-colors"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex gap-3 min-w-0">
+            <div
+              className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+                isMapped ? "bg-emerald-100" : "bg-amber-50",
+              )}
+            >
+              <FileText
+                className={cn(
+                  "h-5 w-5",
+                  isMapped ? "text-emerald-700" : "text-amber-600",
+                )}
+              />
+            </div>
+            <div className="min-w-0 space-y-1.5">
+              <CardTitle className="text-base truncate">{template.name}</CardTitle>
+              <CardDescription className="flex flex-wrap items-center gap-2">
+                <Badge variant="muted" className="font-mono text-[10px]">
+                  {template.id.slice(0, 12)}…
+                </Badge>
+                <Badge variant="default">{typeLabel}</Badge>
+                <span className="text-xs">
+                  {formatMessage(tp.variables, { count: variables.length })}
+                </span>
+              </CardDescription>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {isMapped && (
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+
+          <div className="flex items-center gap-2 shrink-0">
+            {isMapped ? (
+              <Badge variant="success" className="gap-1">
+                <CheckCircle2 className="h-3 w-3" />
                 {tp.mapped}
-              </span>
+              </Badge>
+            ) : (
+              <Badge variant="warning" className="gap-1">
+                <Circle className="h-3 w-3" />
+                {tp.pending}
+              </Badge>
             )}
-            <span className="text-muted-foreground text-sm">{open ? "▲" : "▼"}</span>
+            <ChevronDown
+              className={cn(
+                "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                open && "rotate-180",
+              )}
+            />
           </div>
         </div>
+        {!open && (
+          <p className="text-xs text-muted-foreground mt-2 pl-[52px]">{tp.expandHint}</p>
+        )}
       </CardHeader>
 
       {open && (
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">{tp.docName}</label>
-              <div className="flex rounded-md border text-xs overflow-hidden">
+        <CardContent className="space-y-4 pt-0 pb-6">
+          <SectionBlock icon={FileText} title={tp.sectionDocument}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground">{tp.docName}</span>
+              <div className="inline-flex rounded-lg border bg-card p-0.5 text-xs">
                 <button
                   type="button"
                   onClick={() => setDocNameMode("text")}
-                  className={`px-3 py-1 transition-colors ${docNameMode === "text" ? "bg-[var(--bitrix-primary-dark)] text-white" : "hover:bg-muted"}`}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 transition-colors",
+                    docNameMode === "text"
+                      ? "bg-[var(--bitrix-primary-dark)] text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
                 >
                   {tp.freeText}
                 </button>
                 <button
                   type="button"
                   onClick={() => setDocNameMode("field")}
-                  className={`px-3 py-1 transition-colors ${docNameMode === "field" ? "bg-[var(--bitrix-primary-dark)] text-white" : "hover:bg-muted"}`}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 transition-colors",
+                    docNameMode === "field"
+                      ? "bg-[var(--bitrix-primary-dark)] text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
                 >
                   {tp.bitrixField}
                 </button>
@@ -172,7 +271,7 @@ export function TemplateMappingEditor({
               <select
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                className={selectClass}
               >
                 <option value="">{tp.selectField}</option>
                 {dealFields.map((f) => (
@@ -187,16 +286,17 @@ export function TemplateMappingEditor({
               {docNameMode === "text" ? (
                 <>
                   {tp.docNameHintText}{" "}
-                  <code className="rounded bg-muted px-1">{"Contrato {=Document:TITLE}"}</code>
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-[11px]">
+                    {"Contrato {=Document:TITLE}"}
+                  </code>
                 </>
               ) : (
                 tp.docNameHintField
               )}
             </p>
-          </div>
+          </SectionBlock>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{tp.signers}</label>
+          <SectionBlock icon={Users} title={tp.sectionSigners}>
             <div className="space-y-2">
               {signers.map((email, index) => (
                 <div key={index} className="flex items-center gap-2">
@@ -205,15 +305,16 @@ export function TemplateMappingEditor({
                     placeholder="email@empresa.com"
                     value={email}
                     onChange={(e) => updateSigner(index, e.target.value)}
-                    className="flex-1"
+                    className="flex-1 bg-card"
                   />
                   {signers.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeSigner(index)}
-                      className="text-red-400 hover:text-red-600 text-sm px-2"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                      aria-label="Remove signer"
                     >
-                      ✕
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -222,41 +323,73 @@ export function TemplateMappingEditor({
             <button
               type="button"
               onClick={addSigner}
-              className="text-sm text-[var(--bitrix-primary-dark)] hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm text-[var(--bitrix-primary-dark)] hover:underline"
             >
+              <Plus className="h-3.5 w-3.5" />
               {tp.addSigner}
             </button>
-          </div>
+          </SectionBlock>
 
           {variables.length > 0 && (
-            <div className="space-y-3">
-              <label className="text-sm font-medium">{tp.mappingTitle}</label>
-              <p className="text-xs text-muted-foreground">{tp.mappingHint}</p>
-              <div className="grid gap-3">
-                {variables.map((variable) => (
-                  <div key={variable} className="grid grid-cols-2 items-center gap-3">
-                    <label className="text-sm font-mono">{variable}</label>
-                    <select
-                      value={mappings[variable] ?? ""}
-                      onChange={(e) => setMapping(variable, e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">{tp.selectField}</option>
-                      {dealFields.map((f) => (
-                        <option key={f.code} value={f.code}>
-                          {f.title} ({f.code})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
+            <SectionBlock icon={Link2} title={tp.sectionVariables}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">{tp.mappingHint}</p>
+                <Badge variant={mappedVarCount === variables.length ? "success" : "muted"}>
+                  {formatMessage(tp.varsMapped, {
+                    mapped: mappedVarCount,
+                    total: variables.length,
+                  })}
+                </Badge>
               </div>
-            </div>
+              <div className="rounded-lg border bg-card overflow-hidden divide-y">
+                {variables.map((variable, idx) => {
+                  const mapped = Boolean(mappings[variable]);
+                  return (
+                    <div
+                      key={variable}
+                      className={cn(
+                        "grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center px-3 py-2.5",
+                        idx % 2 === 0 && "bg-muted/20",
+                      )}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        {mapped ? (
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                        ) : (
+                          <Circle className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                        )}
+                        <code className="text-xs font-mono truncate">{variable}</code>
+                      </div>
+                      <select
+                        value={mappings[variable] ?? ""}
+                        onChange={(e) => setMapping(variable, e.target.value)}
+                        className={selectClass}
+                      >
+                        <option value="">{tp.selectField}</option>
+                        {dealFields.map((f) => (
+                          <option key={f.code} value={f.code}>
+                            {f.title} ({f.code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionBlock>
           )}
 
-          <Button type="button" variant="accent" onClick={() => void save()} disabled={loading}>
-            {tp.saveMapping}
-          </Button>
+          <div className="flex justify-end pt-2 border-t">
+            <Button
+              type="button"
+              variant="accent"
+              onClick={() => void save()}
+              disabled={loading}
+              className="min-w-[160px]"
+            >
+              {tp.saveMapping}
+            </Button>
+          </div>
         </CardContent>
       )}
     </Card>

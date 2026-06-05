@@ -36,6 +36,7 @@ export const messages = {
       globals: "Globais",
       templates: "Templates",
       legacy: "Legado",
+      docs: "Documentação",
     },
     pages: {
       dashboard: { title: "Dashboard" },
@@ -45,6 +46,7 @@ export const messages = {
       connection: { title: "Conexão Bitrix" },
       globals: { title: "Parâmetros globais" },
       legacy: { title: "Bridge legado (Prismatic)" },
+      docs: { title: "Documentação" },
     },
     legacy: {
       intro:
@@ -86,6 +88,16 @@ export const messages = {
       colUpdated: "Atualizado",
     },
     templates: {
+      pageHint:
+        "Configure nome do documento, signatários e variáveis. Depois sincronize o robô no Bitrix.",
+      totalLabel: "templates",
+      statsMapped: "{mapped} de {total} mapeados",
+      pending: "Pendente",
+      expandHint: "Clique para expandir e configurar",
+      sectionDocument: "Documento",
+      sectionSigners: "Signatários",
+      sectionVariables: "Variáveis",
+      varsMapped: "{mapped}/{total} mapeadas",
       cardTitle: "Templates Word (D4Sign)",
       needCredentials:
         "Configure as credenciais D4Sign em Configurações → Credenciais para listar os templates.",
@@ -108,7 +120,7 @@ export const messages = {
       docNameHintField:
         "Selecione um campo do Deal — o valor real será usado como nome do documento.",
       signers: "Signatários",
-      addSigner: "+ Adicionar signatário",
+      addSigner: "Adicionar signatário",
       signerRequired: "Adicione pelo menos um e-mail de signatário",
       mappingTitle: "Mapeamento de variáveis",
       mappingHint:
@@ -218,6 +230,7 @@ export const messages = {
       globals: "Globals",
       templates: "Templates",
       legacy: "Legacy",
+      docs: "Documentation",
     },
     pages: {
       dashboard: { title: "Dashboard" },
@@ -227,6 +240,7 @@ export const messages = {
       connection: { title: "Bitrix connection" },
       globals: { title: "Global parameters" },
       legacy: { title: "Legacy bridge (Prismatic)" },
+      docs: { title: "Documentation" },
     },
     legacy: {
       intro:
@@ -268,6 +282,16 @@ export const messages = {
       colUpdated: "Updated",
     },
     templates: {
+      pageHint:
+        "Configure document name, signers, and variables. Then sync the robot in Bitrix.",
+      totalLabel: "templates",
+      statsMapped: "{mapped} of {total} mapped",
+      pending: "Pending",
+      expandHint: "Click to expand and configure",
+      sectionDocument: "Document",
+      sectionSigners: "Signers",
+      sectionVariables: "Variables",
+      varsMapped: "{mapped}/{total} mapped",
       cardTitle: "Word templates (D4Sign)",
       needCredentials:
         "Configure D4Sign credentials in Settings → Credentials to list templates.",
@@ -290,7 +314,7 @@ export const messages = {
       docNameHintField:
         "Select a Deal field — the actual value will be used as the document name.",
       signers: "Signers",
-      addSigner: "+ Add signer",
+      addSigner: "Add signer",
       signerRequired: "Add at least one signer email",
       mappingTitle: "Variable mapping",
       mappingHint:
