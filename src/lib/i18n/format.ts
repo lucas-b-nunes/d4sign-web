@@ -1,4 +1,5 @@
 import type { Locale } from "./messages";
+import { normalizeDocStatusLabel } from "@/lib/document-status";
 
 export function localeToIntl(locale: Locale): string {
   return locale === "en" ? "en-US" : "pt-BR";
@@ -10,5 +11,15 @@ export function translateDocStatus(
   labels: Record<string, string>,
 ): string {
   if (!status) return "—";
-  return labels[status] ?? status;
+  const canonical = normalizeDocStatusLabel(status);
+  return labels[canonical] ?? labels[status] ?? canonical;
 }
+
+export type { DocumentStatusCategory } from "@/lib/document-status";
+export {
+  categorizeDocumentStatus,
+  isWaitingSignature,
+  isSignedDocument,
+  badgeColorForCategory,
+  normalizeDocStatusLabel,
+} from "@/lib/document-status";

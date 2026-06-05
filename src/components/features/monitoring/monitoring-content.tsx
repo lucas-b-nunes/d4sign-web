@@ -3,7 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/provider";
-import { localeToIntl, translateDocStatus } from "@/lib/i18n/format";
+import {
+  localeToIntl,
+  translateDocStatus,
+  categorizeDocumentStatus,
+} from "@/lib/i18n/format";
 
 type DocumentRow = {
   id: string;
@@ -11,14 +15,16 @@ type DocumentRow = {
   entityType: string;
   entityId: string;
   statusName: string | null;
+  statusId?: number | null;
   updatedAt: string;
 };
 
-function statusVariant(name: string | null | undefined) {
-  if (!name) return "muted" as const;
-  if (/assinado|conclu|signed|complet/i.test(name)) return "success" as const;
-  if (/pendente|aguard|wait/i.test(name)) return "warning" as const;
-  return "default" as const;
+function statusVariant(statusName: string | null, statusId?: number | null) {
+  const category = categorizeDocumentStatus(statusName, statusId);
+  if (category === "signed") return "success" as const;
+  if (category === "waiting") return "warning" as const;
+  if (category === "canceled") return "default" as const;
+  return "muted" as const;
 }
 
 export function MonitoringContent({ documents }: { documents: DocumentRow[] }) {
@@ -52,7 +58,7 @@ export function MonitoringContent({ documents }: { documents: DocumentRow[] }) {
                       {d.entityType} #{d.entityId}
                     </td>
                     <td className="py-2 pr-4">
-                      <Badge variant={statusVariant(d.statusName)}>
+                      <Badge variant={statusVariant(d.statusName, d.statusId)}>
                         {translateDocStatus(d.statusName, t.docStatus)}
                       </Badge>
                     </td>

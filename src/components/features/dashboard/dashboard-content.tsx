@@ -5,7 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Clock, FileText, Settings, Activity } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
 import { formatMessage } from "@/lib/i18n/messages";
-import { localeToIntl, translateDocStatus } from "@/lib/i18n/format";
+import {
+  localeToIntl,
+  translateDocStatus,
+  isWaitingSignature,
+  isSignedDocument,
+  categorizeDocumentStatus,
+  badgeColorForCategory,
+} from "@/lib/i18n/format";
 
 type DocumentRow = {
   id: string;
@@ -13,6 +20,7 @@ type DocumentRow = {
   entityType: string;
   entityId: string;
   statusName: string | null;
+  statusId?: number | null;
   updatedAt: string;
 };
 
@@ -29,21 +37,14 @@ function SetupItem({ ok, label, href }: { ok: boolean; label: string; href: stri
   );
 }
 
-function statusBadge(status: string | null, labels: Record<string, string>) {
+function statusBadge(
+  status: string | null,
+  statusId: number | null | undefined,
+  labels: Record<string, string>,
+) {
   const label = translateDocStatus(status, labels);
-  const colors: Record<string, string> = {
-    "Aguardando Assinaturas": "bg-yellow-100 text-yellow-800",
-    "Awaiting signatures": "bg-yellow-100 text-yellow-800",
-    Assinado: "bg-green-100 text-green-800",
-    Signed: "bg-green-100 text-green-800",
-    Cancelado: "bg-red-100 text-red-800",
-    Canceled: "bg-red-100 text-red-800",
-    Finalizado: "bg-green-100 text-green-800",
-    Completed: "bg-green-100 text-green-800",
-    Rascunho: "bg-gray-100 text-gray-700",
-    Draft: "bg-gray-100 text-gray-700",
-  };
-  const cls = colors[label] ?? "bg-gray-100 text-gray-700";
+  const category = categorizeDocumentStatus(status, statusId);
+  const cls = badgeColorForCategory(category);
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{label}</span>
   );
@@ -71,9 +72,11 @@ export function DashboardContent({
 
   const recentDocs = documents.slice(0, 5);
   const totalDocs = documents.length;
-  const waitingDocs = documents.filter((doc) => doc.statusName === "Aguardando Assinaturas").length;
-  const signedDocs = documents.filter(
-    (doc) => doc.statusName === "Assinado" || doc.statusName === "Finalizado",
+  const waitingDocs = documents.filter((doc) =>
+    isWaitingSignature(doc.statusName, doc.statusId),
+  ).length;
+  const signedDocs = documents.filter((doc) =>
+    isSignedDocument(doc.statusName, doc.statusId),
   ).length;
 
   return (
@@ -171,7 +174,7 @@ export function DashboardContent({
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {statusBadge(doc.statusName, t.docStatus)}
+                    {statusBadge(doc.statusName, doc.statusId, t.docStatus)}
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {new Date(doc.updatedAt).toLocaleDateString(localeToIntl(locale))}

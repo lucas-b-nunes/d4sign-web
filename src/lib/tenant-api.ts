@@ -64,6 +64,7 @@ export type DocumentDto = {
   entityType: string;
   entityId: string;
   statusName: string | null;
+  statusId?: number | null;
   updatedAt: string;
 };
 
