@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,43 +14,20 @@ import { cn } from "@/lib/utils";
 export function CredentialsForm({
   memberId,
   initialConfigured,
+  initialTokenApi = "",
+  initialCryptKey = "",
 }: {
   memberId: string;
   initialConfigured: boolean;
+  initialTokenApi?: string;
+  initialCryptKey?: string;
 }) {
   const { t } = useI18n();
   const c = t.credentials;
-  const [tokenApi, setTokenApi] = useState("");
-  const [cryptKey, setCryptKey] = useState("");
+  const [tokenApi, setTokenApi] = useState(initialTokenApi);
+  const [cryptKey, setCryptKey] = useState(initialCryptKey);
   const [showCryptKey, setShowCryptKey] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch(
-          apiUrl(`/api/settings/d4sign?member_id=${encodeURIComponent(memberId)}`),
-          { cache: "no-store" },
-        );
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          tokenApi?: string | null;
-          cryptKey?: string | null;
-        };
-        if (cancelled) return;
-        if (data.tokenApi) setTokenApi(data.tokenApi);
-        if (data.cryptKey) setCryptKey(data.cryptKey);
-      } finally {
-        if (!cancelled) setLoadingData(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [memberId]);
 
   async function save() {
     setLoading(true);
@@ -116,7 +93,6 @@ export function CredentialsForm({
             value={tokenApi}
             onChange={(e) => setTokenApi(e.target.value)}
             placeholder="tokenAPI"
-            disabled={loadingData}
             className="font-mono text-sm"
           />
         </div>
@@ -131,14 +107,12 @@ export function CredentialsForm({
               spellCheck={false}
               value={cryptKey}
               onChange={(e) => setCryptKey(e.target.value)}
-              placeholder={initialConfigured && !cryptKey ? "••••••••" : ""}
-              disabled={loadingData}
               className={cn("pr-10 font-mono text-sm", !showCryptKey && cryptKey && "tracking-widest")}
             />
             <button
               type="button"
               onClick={() => setShowCryptKey((v) => !v)}
-              disabled={loadingData || !cryptKey}
+              disabled={!cryptKey}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
               aria-label={showCryptKey ? c.hideSecret : c.showSecret}
             >
@@ -151,7 +125,7 @@ export function CredentialsForm({
           <Button
             type="button"
             onClick={() => void testConnection()}
-            disabled={loading || loadingData || !tokenApi.trim()}
+            disabled={loading || !tokenApi.trim()}
           >
             {t.testConnection}
           </Button>
@@ -159,7 +133,7 @@ export function CredentialsForm({
             type="button"
             variant="accent"
             onClick={() => void save()}
-            disabled={loading || loadingData || !tokenApi.trim()}
+            disabled={loading || !tokenApi.trim()}
           >
             {t.save}
           </Button>

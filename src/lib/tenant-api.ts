@@ -22,6 +22,25 @@ export type TenantDto = {
   } | null;
 };
 
+export type D4SignSettingsDto = {
+  configured: boolean;
+  tokenApi: string | null;
+  cryptKey: string | null;
+  hmacSecret: string | null;
+  defaultSafeUuid: string | null;
+};
+
+export async function fetchD4SignSettings(
+  memberId: string,
+): Promise<D4SignSettingsDto | null> {
+  const res = await fetch(
+    apiUrl(`/api/settings/d4sign?member_id=${encodeURIComponent(memberId)}`),
+    { cache: "no-store" },
+  );
+  if (!res.ok) return null;
+  return res.json() as Promise<D4SignSettingsDto>;
+}
+
 export async function fetchTenant(
   memberId: string,
 ): Promise<TenantDto | null> {

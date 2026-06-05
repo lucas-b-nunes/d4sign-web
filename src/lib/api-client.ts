@@ -2,17 +2,20 @@ const PUBLIC_API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 const INTERNAL_API_BASE =
   process.env.API_INTERNAL_URL?.replace(/\/$/, "") ?? PUBLIC_API_BASE;
 
+/** Proxy same-origin no Next.js — evita CORS no iframe Bitrix e ngrok desatualizado. */
+const BROWSER_API_PROXY = "/api/backend";
+
 export function getApiBase(): string {
-  if (!PUBLIC_API_BASE) {
-    throw new Error("NEXT_PUBLIC_API_URL não está definido");
-  }
-  // SSR: preferir URL interna (localhost) para evitar round-trip via ngrok
   const isServer = typeof window === "undefined";
-  const base = isServer && INTERNAL_API_BASE ? INTERNAL_API_BASE : PUBLIC_API_BASE;
-  if (!base) {
-    throw new Error("URL da API não configurada");
+
+  if (isServer) {
+    if (!INTERNAL_API_BASE && !PUBLIC_API_BASE) {
+      throw new Error("NEXT_PUBLIC_API_URL não está definido");
+    }
+    return INTERNAL_API_BASE ?? PUBLIC_API_BASE!;
   }
-  return base;
+
+  return BROWSER_API_PROXY;
 }
 
 export function apiUrl(path: string): string {
