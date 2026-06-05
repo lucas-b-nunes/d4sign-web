@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { mainNav } from "@/config/navigation";
@@ -18,8 +19,15 @@ export function AppSidebar({ memberId }: { memberId: string }) {
       style={{ minHeight: "100vh" }}
     >
       <div className="border-b border-border p-4">
-        <p className="text-sm font-semibold text-[var(--bitrix-primary-dark)]">D4Sign</p>
-        <p className="text-xs text-muted-foreground">{t.appName}</p>
+        <Image
+          src="/logo-d4sign.png"
+          alt="D4Sign"
+          width={132}
+          height={36}
+          priority
+          className="h-9 w-auto invert"
+        />
+        <p className="mt-2 text-xs text-muted-foreground">{t.appName}</p>
       </div>
       <nav className="flex flex-1 flex-col gap-0.5 p-2">
         {mainNav.map((item) => {
