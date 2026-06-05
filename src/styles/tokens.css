@@ -11,12 +11,6 @@
   --muted-foreground: #6a737d;
   --radius: 8px;
   --sidebar-width: 240px;
-  --shell-bg: #000000;
-  --shell-border: #262626;
-  --shell-text: #ffffff;
-  --shell-text-muted: #a3a3a3;
-  --shell-hover: #171717;
-  --shell-active: #262626;
 }
 
 .dark {
