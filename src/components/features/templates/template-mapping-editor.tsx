@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiUrl } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n/provider";
+import { formatMessage } from "@/lib/i18n/messages";
 
 type D4SignTemplate = {
   id: string;
@@ -28,7 +30,6 @@ type DealField = {
   type: string;
 };
 
-/** Extrai lista plana de variáveis do template (tanto HTML quanto Word) */
 function extractVariables(variables: D4SignTemplate["variables"]): string[] {
   if (Array.isArray(variables)) return variables.filter(Boolean);
   const all: string[] = [];
@@ -53,16 +54,14 @@ export function TemplateMappingEditor({
   saved: SavedMapping | undefined;
   dealFields: DealField[];
 }) {
+  const { t } = useI18n();
+  const tp = t.templates;
   const variables = extractVariables(template.variables);
-  const [mappings, setMappings] = useState<Record<string, string>>(
-    saved?.mappings ?? {},
-  );
+  const [mappings, setMappings] = useState<Record<string, string>>(saved?.mappings ?? {});
   const [documentName, setDocumentName] = useState(saved?.documentName ?? "");
   const [docNameMode, setDocNameMode] = useState<"text" | "field">("text");
   const [signers, setSigners] = useState<string[]>(
-    saved?.signersEmails && saved.signersEmails.length > 0
-      ? saved.signersEmails
-      : [""],
+    saved?.signersEmails && saved.signersEmails.length > 0 ? saved.signersEmails : [""],
   );
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -86,7 +85,7 @@ export function TemplateMappingEditor({
   async function save() {
     const validSigners = signers.map((s) => s.trim()).filter(Boolean);
     if (validSigners.length === 0) {
-      toast.error("Adicione pelo menos um e-mail de signatário");
+      toast.error(tp.signerRequired);
       return;
     }
 
@@ -108,9 +107,9 @@ export function TemplateMappingEditor({
         },
       );
       if (!res.ok) throw new Error(await res.text());
-      toast.success(`Mapeamento "${template.name}" salvo`);
+      toast.success(formatMessage(tp.mappingSaved, { name: template.name }));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+      toast.error(e instanceof Error ? e.message : tp.saveError);
     } finally {
       setLoading(false);
     }
@@ -120,22 +119,19 @@ export function TemplateMappingEditor({
 
   return (
     <Card>
-      <CardHeader
-        className="cursor-pointer select-none"
-        onClick={() => setOpen((o) => !o)}
-      >
+      <CardHeader className="cursor-pointer select-none" onClick={() => setOpen((o) => !o)}>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base">{template.name}</CardTitle>
             <CardDescription>
-              ID: <code className="text-xs">{template.id}</code> · Tipo: {template.type} ·{" "}
-              {variables.length} variável(is)
+              {tp.id}: <code className="text-xs">{template.id}</code> · {tp.type}: {template.type} ·{" "}
+              {formatMessage(tp.variables, { count: variables.length })}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {isMapped && (
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                mapeado
+                {tp.mapped}
               </span>
             )}
             <span className="text-muted-foreground text-sm">{open ? "▲" : "▼"}</span>
@@ -145,32 +141,30 @@ export function TemplateMappingEditor({
 
       {open && (
         <CardContent className="space-y-6">
-
-          {/* Nome do documento */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Nome do documento</label>
+              <label className="text-sm font-medium">{tp.docName}</label>
               <div className="flex rounded-md border text-xs overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setDocNameMode("text")}
                   className={`px-3 py-1 transition-colors ${docNameMode === "text" ? "bg-[var(--bitrix-primary-dark)] text-white" : "hover:bg-muted"}`}
                 >
-                  Texto livre
+                  {tp.freeText}
                 </button>
                 <button
                   type="button"
                   onClick={() => setDocNameMode("field")}
                   className={`px-3 py-1 transition-colors ${docNameMode === "field" ? "bg-[var(--bitrix-primary-dark)] text-white" : "hover:bg-muted"}`}
                 >
-                  Campo Bitrix
+                  {tp.bitrixField}
                 </button>
               </div>
             </div>
 
             {docNameMode === "text" ? (
               <Input
-                placeholder="Ex: Contrato {=Document:TITLE}"
+                placeholder={tp.docNamePlaceholder}
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
               />
@@ -180,7 +174,7 @@ export function TemplateMappingEditor({
                 onChange={(e) => setDocumentName(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">— selecione o campo —</option>
+                <option value="">{tp.selectField}</option>
                 {dealFields.map((f) => (
                   <option key={f.code} value={`{=Document:${f.code}}`}>
                     {f.title} ({f.code})
@@ -190,16 +184,19 @@ export function TemplateMappingEditor({
             )}
 
             <p className="text-xs text-muted-foreground">
-              {docNameMode === "text"
-                ? <>Texto livre. Você pode combinar texto fixo com variáveis Bitrix, ex: <code className="rounded bg-muted px-1">{"Contrato {=Document:TITLE}"}</code></>
-                : "Selecione um campo do Deal — o valor real será usado como nome do documento."
-              }
+              {docNameMode === "text" ? (
+                <>
+                  {tp.docNameHintText}{" "}
+                  <code className="rounded bg-muted px-1">{"Contrato {=Document:TITLE}"}</code>
+                </>
+              ) : (
+                tp.docNameHintField
+              )}
             </p>
           </div>
 
-          {/* Signatários */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Signatários</label>
+            <label className="text-sm font-medium">{tp.signers}</label>
             <div className="space-y-2">
               {signers.map((email, index) => (
                 <div key={index} className="flex items-center gap-2">
@@ -227,17 +224,14 @@ export function TemplateMappingEditor({
               onClick={addSigner}
               className="text-sm text-[var(--bitrix-primary-dark)] hover:underline"
             >
-              + Adicionar signatário
+              {tp.addSigner}
             </button>
           </div>
 
-          {/* Mapeamento de variáveis */}
           {variables.length > 0 && (
             <div className="space-y-3">
-              <label className="text-sm font-medium">Mapeamento de variáveis</label>
-              <p className="text-xs text-muted-foreground">
-                Para cada variável do template, selecione o campo do Deal Bitrix que contém o valor.
-              </p>
+              <label className="text-sm font-medium">{tp.mappingTitle}</label>
+              <p className="text-xs text-muted-foreground">{tp.mappingHint}</p>
               <div className="grid gap-3">
                 {variables.map((variable) => (
                   <div key={variable} className="grid grid-cols-2 items-center gap-3">
@@ -247,7 +241,7 @@ export function TemplateMappingEditor({
                       onChange={(e) => setMapping(variable, e.target.value)}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="">— selecione o campo —</option>
+                      <option value="">{tp.selectField}</option>
                       {dealFields.map((f) => (
                         <option key={f.code} value={f.code}>
                           {f.title} ({f.code})
@@ -260,13 +254,8 @@ export function TemplateMappingEditor({
             </div>
           )}
 
-          <Button
-            type="button"
-            variant="accent"
-            onClick={() => void save()}
-            disabled={loading}
-          >
-            Salvar mapeamento
+          <Button type="button" variant="accent" onClick={() => void save()} disabled={loading}>
+            {tp.saveMapping}
           </Button>
         </CardContent>
       )}

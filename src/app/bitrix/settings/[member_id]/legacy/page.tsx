@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { LegacyBridgeForm } from "@/components/features/setup/legacy-bridge-form";
 import { SettingsNav } from "@/components/features/setup/settings-nav";
+import { LegacyBridgeIntro } from "@/components/features/setup/legacy-bridge-intro";
 import { fetchTenant } from "@/lib/tenant-api";
 import { notFound } from "next/navigation";
 
@@ -18,17 +19,13 @@ export default async function LegacyBridgePage({
   return (
     <AppShell
       memberId={member_id}
-      title="Bridge legado (Prismatic)"
-      breadcrumbs={["Configurações", "Legado"]}
+      page="legacy"
+      breadcrumbKeys={["settings", "legacy"]}
       bitrixConnected
       d4signConnected={tenant.d4signConfigured}
     >
       <SettingsNav memberId={member_id} />
-      <p className="mb-4 text-sm text-muted-foreground">
-        URLs de encaminhamento estilo ClickSign/Prismatic. Ativo no robô apenas se{" "}
-        <code className="rounded bg-muted px-1">USE_PRISMATIC_BRIDGE=true</code>{" "}
-        no backend.
-      </p>
+      <LegacyBridgeIntro />
       <LegacyBridgeForm
         domainId={tenant.id}
         memberId={member_id}

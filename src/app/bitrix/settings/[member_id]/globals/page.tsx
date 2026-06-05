@@ -2,7 +2,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { SettingsNav } from "@/components/features/setup/settings-nav";
 import { SafeSelectorForm } from "@/components/features/setup/safe-selector-form";
 import { GlobalsDealFieldsForm } from "@/components/features/setup/globals-deal-fields-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlobalsSafeHint } from "@/components/features/setup/globals-safe-hint";
 import { fetchTenant } from "@/lib/tenant-api";
 import { apiUrl } from "@/lib/api-client";
 import { notFound } from "next/navigation";
@@ -80,7 +80,9 @@ export default async function GlobalsPage({
   if (!tenant) notFound();
 
   const [safesData, dealFields, globalsSettings] = await Promise.all([
-    tenant.d4signConfigured ? fetchSafes(member_id) : Promise.resolve({ safes: [], currentSafeUuid: null }),
+    tenant.d4signConfigured
+      ? fetchSafes(member_id)
+      : Promise.resolve({ safes: [], currentSafeUuid: null }),
     fetchDealFields(member_id),
     fetchGlobalsSettings(member_id),
   ]);
@@ -90,8 +92,8 @@ export default async function GlobalsPage({
   return (
     <AppShell
       memberId={member_id}
-      title="Parâmetros globais"
-      breadcrumbs={["Configurações", "Globais"]}
+      page="globals"
+      breadcrumbKeys={["settings", "globals"]}
       bitrixConnected
       d4signConnected={tenant.d4signConfigured}
     >
@@ -105,14 +107,7 @@ export default async function GlobalsPage({
             safes={safes}
           />
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Cofre padrão</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Configure as credenciais D4Sign primeiro para selecionar o cofre.
-            </CardContent>
-          </Card>
+          <GlobalsSafeHint />
         )}
 
         <GlobalsDealFieldsForm

@@ -17,6 +17,7 @@ export function CredentialsForm({
   initialConfigured: boolean;
 }) {
   const { t } = useI18n();
+  const c = t.credentials;
   const [tokenApi, setTokenApi] = useState("");
   const [cryptKey, setCryptKey] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,9 +37,9 @@ export function CredentialsForm({
         },
       );
       if (!res.ok) throw new Error(await res.text());
-      toast.success("Credenciais salvas");
+      toast.success(c.saved);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+      toast.error(e instanceof Error ? e.message : c.saveError);
     } finally {
       setLoading(false);
     }
@@ -48,9 +49,7 @@ export function CredentialsForm({
     setLoading(true);
     try {
       const res = await fetch(
-        apiUrl(
-          `/api/settings/d4sign/test?member_id=${encodeURIComponent(memberId)}`,
-        ),
+        apiUrl(`/api/settings/d4sign/test?member_id=${encodeURIComponent(memberId)}`),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -58,10 +57,10 @@ export function CredentialsForm({
         },
       );
       const data = (await res.json()) as { ok?: boolean; message?: string };
-      if (data.ok) toast.success("Conexão D4Sign OK");
-      else toast.error(data.message ?? "Falha na conexão");
+      if (data.ok) toast.success(c.connectionOk);
+      else toast.error(data.message ?? c.connectionFail);
     } catch {
-      toast.error("Erro ao testar");
+      toast.error(c.testError);
     } finally {
       setLoading(false);
     }
@@ -70,17 +69,15 @@ export function CredentialsForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Credenciais D4Sign</CardTitle>
+        <CardTitle>{c.title}</CardTitle>
         <CardDescription>
-          {initialConfigured
-            ? "Credenciais já configuradas. Informe novamente apenas para alterar."
-            : "Informe o token da API D4Sign (sandbox ou produção)."}
-          {" "}Após salvar, vá em <strong>Globais</strong> para selecionar o cofre padrão.
+          {initialConfigured ? c.configured : c.notConfigured}{" "}
+          {c.afterSave} <strong>{t.settingsNav.globals}</strong> {c.afterSaveSuffix}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 max-w-lg">
         <div className="space-y-2">
-          <Label htmlFor="tokenApi">API Token *</Label>
+          <Label htmlFor="tokenApi">{c.tokenLabel}</Label>
           <Input
             id="tokenApi"
             type="password"
@@ -91,7 +88,7 @@ export function CredentialsForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cryptKey">Crypt Key</Label>
+          <Label htmlFor="cryptKey">{c.cryptLabel}</Label>
           <Input
             id="cryptKey"
             type="password"

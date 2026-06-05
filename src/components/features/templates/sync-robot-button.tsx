@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/provider";
+import { formatMessage } from "@/lib/i18n/messages";
 import { apiUrl } from "@/lib/api-client";
 
 export function SyncRobotButton({ memberId }: { memberId: string }) {
+  const { t } = useI18n();
+  const tp = t.templates;
   const [loading, setLoading] = useState(false);
 
   async function sync() {
@@ -16,12 +20,12 @@ export function SyncRobotButton({ memberId }: { memberId: string }) {
         { method: "POST" },
       );
       const data = (await res.json()) as { ok?: boolean; syncedTemplates?: number; error?: string };
-      if (!res.ok) throw new Error(data.error ?? "Erro ao sincronizar");
+      if (!res.ok) throw new Error(data.error ?? tp.syncError);
       toast.success(
-        `Robô sincronizado! ${data.syncedTemplates ?? 0} template(s) disponível(is) no select do Bitrix.`,
+        formatMessage(tp.syncOk, { count: data.syncedTemplates ?? 0 }),
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao sincronizar robô");
+      toast.error(e instanceof Error ? e.message : tp.syncError);
     } finally {
       setLoading(false);
     }
@@ -35,7 +39,7 @@ export function SyncRobotButton({ memberId }: { memberId: string }) {
       disabled={loading}
       onClick={() => void sync()}
     >
-      {loading ? "Sincronizando..." : "Sincronizar robô no Bitrix"}
+      {loading ? tp.syncing : tp.syncRobot}
     </Button>
   );
 }

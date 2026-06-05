@@ -18,8 +18,8 @@ export default async function CredentialsSettingsPage({
   return (
     <AppShell
       memberId={member_id}
-      title="Credenciais D4Sign"
-      breadcrumbs={["Configurações", "Credenciais"]}
+      page="credentials"
+      breadcrumbKeys={["settings", "credentials"]}
       bitrixConnected
       d4signConnected={tenant.d4signConfigured}
     >

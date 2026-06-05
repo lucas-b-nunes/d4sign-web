@@ -1,7 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TemplateMappingEditor } from "@/components/features/templates/template-mapping-editor";
-import { SyncRobotButton } from "@/components/features/templates/sync-robot-button";
+import { TemplatesPageContent } from "@/components/features/templates/templates-page-content";
 import { fetchTenant } from "@/lib/tenant-api";
 import { apiUrl } from "@/lib/api-client";
 import { notFound } from "next/navigation";
@@ -81,7 +79,11 @@ export default async function TemplatesPage({
   if (!tenant) notFound();
 
   const [templates, mappings, dealFields] = tenant.d4signConfigured
-    ? await Promise.all([fetchTemplates(member_id), fetchMappings(member_id), fetchDealFields(member_id)])
+    ? await Promise.all([
+        fetchTemplates(member_id),
+        fetchMappings(member_id),
+        fetchDealFields(member_id),
+      ])
     : [[], [], []];
 
   const mappingsByTemplateId = Object.fromEntries(
@@ -91,48 +93,18 @@ export default async function TemplatesPage({
   return (
     <AppShell
       memberId={member_id}
-      title="Templates"
-      breadcrumbs={["Operação", "Templates"]}
+      page="templates"
+      breadcrumbKeys={["operation", "templates"]}
       bitrixConnected
       d4signConnected={tenant.d4signConfigured}
     >
-      {!tenant.d4signConfigured ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Templates Word (D4Sign)</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Configure as credenciais D4Sign em Configurações → Credenciais para listar os templates.
-          </CardContent>
-        </Card>
-      ) : templates.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Templates Word (D4Sign)</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Nenhum template encontrado na conta D4Sign. Crie templates no portal D4Sign e recarregue esta página.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              {templates.length} template(s) encontrado(s) — clique para configurar o mapeamento de campos
-            </h2>
-            <SyncRobotButton memberId={member_id} />
-          </div>
-          {templates.map((template) => (
-            <TemplateMappingEditor
-              key={template.id}
-              memberId={member_id}
-              template={template}
-              saved={mappingsByTemplateId[template.id]}
-              dealFields={dealFields}
-            />
-          ))}
-        </div>
-      )}
+      <TemplatesPageContent
+        memberId={member_id}
+        d4signConfigured={tenant.d4signConfigured}
+        templates={templates}
+        mappingsByTemplateId={mappingsByTemplateId}
+        dealFields={dealFields}
+      />
     </AppShell>
   );
 }

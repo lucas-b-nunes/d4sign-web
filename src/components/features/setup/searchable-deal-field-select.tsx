@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/provider";
+import { formatMessage } from "@/lib/i18n/messages";
 
 export type DealFieldOption = {
   code: string;
@@ -21,7 +23,7 @@ export function SearchableDealFieldSelect({
   value,
   onChange,
   fields,
-  placeholder = "Buscar por nome ou código…",
+  placeholder,
 }: {
   id: string;
   label: string;
@@ -31,6 +33,8 @@ export function SearchableDealFieldSelect({
   fields: DealFieldOption[];
   placeholder?: string;
 }) {
+  const { t } = useI18n();
+  const fs = t.fieldSelect;
   const [query, setQuery] = useState("");
 
   const selected = useMemo(
@@ -62,9 +66,9 @@ export function SearchableDealFieldSelect({
             type="button"
             onClick={() => onChange("")}
             className="shrink-0 text-muted-foreground hover:text-foreground text-xs"
-            aria-label="Limpar seleção"
+            aria-label={fs.clearSelection}
           >
-            Limpar
+            {t.clear}
           </button>
         </div>
       )}
@@ -74,15 +78,13 @@ export function SearchableDealFieldSelect({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? fs.search}
         autoComplete="off"
       />
 
       <div className="rounded-md border max-h-52 overflow-y-auto">
         {filtered.length === 0 ? (
-          <p className="px-3 py-4 text-sm text-muted-foreground text-center">
-            Nenhum campo encontrado
-          </p>
+          <p className="px-3 py-4 text-sm text-muted-foreground text-center">{fs.none}</p>
         ) : (
           <ul role="listbox" aria-labelledby={id} className="divide-y">
             {filtered.map((f) => {
@@ -117,8 +119,11 @@ export function SearchableDealFieldSelect({
       <p className="text-xs text-muted-foreground">
         {hint}{" "}
         {query.trim()
-          ? `· ${filtered.length} de ${fields.length} campo(s)`
-          : `· ${fields.length} campo(s) disponíveis`}
+          ? formatMessage(fs.available, {
+              filtered: filtered.length,
+              total: fields.length,
+            })
+          : formatMessage(fs.total, { total: fields.length })}
       </p>
     </div>
   );

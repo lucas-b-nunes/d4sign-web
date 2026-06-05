@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiUrl } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n/provider";
 import {
   SearchableDealFieldSelect,
   type DealFieldOption,
@@ -21,6 +22,8 @@ export function GlobalsDealFieldsForm({
   initialStatusField: string | null;
   initialAttachField: string | null;
 }) {
+  const { t } = useI18n();
+  const g = t.globals;
   const [statusField, setStatusField] = useState(initialStatusField ?? "");
   const [attachField, setAttachField] = useState(initialAttachField ?? "");
   const [loading, setLoading] = useState(false);
@@ -44,11 +47,11 @@ export function GlobalsDealFieldsForm({
       );
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        throw new Error(data.error ?? "Erro ao salvar");
+        throw new Error(data.error ?? g.saveError);
       }
-      toast.success("Parâmetros globais salvos");
+      toast.success(g.saved);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+      toast.error(e instanceof Error ? e.message : g.saveError);
     } finally {
       setLoading(false);
     }
@@ -58,11 +61,9 @@ export function GlobalsDealFieldsForm({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Campos do Deal Bitrix</CardTitle>
+          <CardTitle>{g.dealFieldsError}</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Não foi possível carregar os campos do Deal. Verifique a conexão com o Bitrix.
-        </CardContent>
+        <CardContent className="text-sm text-muted-foreground">{g.dealFieldsLoadError}</CardContent>
       </Card>
     );
   }
@@ -70,16 +71,14 @@ export function GlobalsDealFieldsForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Retorno D4Sign no Deal</CardTitle>
-        <CardDescription>
-          Escolha quais campos do Deal receberão o status e o PDF assinado do documento D4Sign.
-        </CardDescription>
+        <CardTitle>{g.returnTitle}</CardTitle>
+        <CardDescription>{g.returnDesc}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 max-w-lg">
         <SearchableDealFieldSelect
           id="status-document-field"
-          label="Status Documento D4Sign"
-          hint="Campo do Deal onde o status do documento será gravado (ex.: Aguardando assinatura, Finalizado)."
+          label={g.statusField}
+          hint={g.statusHint}
           value={statusField}
           onChange={setStatusField}
           fields={dealFields}
@@ -87,16 +86,16 @@ export function GlobalsDealFieldsForm({
 
         <SearchableDealFieldSelect
           id="attach-document-field"
-          label="Anexo Documento D4Sign"
-          hint="Campo do Deal (tipo arquivo) onde o PDF assinado será anexado após a conclusão."
+          label={g.attachField}
+          hint={g.attachHint}
           value={attachField}
           onChange={setAttachField}
           fields={attachOptions}
-          placeholder="Buscar campo de arquivo…"
+          placeholder={g.attachSearch}
         />
 
         <Button type="button" variant="accent" onClick={() => void save()} disabled={loading}>
-          Salvar parâmetros
+          {g.saveParams}
         </Button>
       </CardContent>
     </Card>
