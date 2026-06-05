@@ -5,50 +5,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiUrl } from "@/lib/api-client";
-
-type DealField = {
-  code: string;
-  title: string;
-  type: string;
-};
-
-function FieldSelect({
-  id,
-  label,
-  hint,
-  value,
-  onChange,
-  fields,
-}: {
-  id: string;
-  label: string;
-  hint: string;
-  value: string;
-  onChange: (value: string) => void;
-  fields: DealField[];
-}) {
-  return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">— selecione o campo —</option>
-        {fields.map((f) => (
-          <option key={f.code} value={f.code}>
-            {f.title} ({f.code})
-          </option>
-        ))}
-      </select>
-      <p className="text-xs text-muted-foreground">{hint}</p>
-    </div>
-  );
-}
+import {
+  SearchableDealFieldSelect,
+  type DealFieldOption,
+} from "@/components/features/setup/searchable-deal-field-select";
 
 export function GlobalsDealFieldsForm({
   memberId,
@@ -57,7 +17,7 @@ export function GlobalsDealFieldsForm({
   initialAttachField,
 }: {
   memberId: string;
-  dealFields: DealField[];
+  dealFields: DealFieldOption[];
   initialStatusField: string | null;
   initialAttachField: string | null;
 }) {
@@ -116,7 +76,7 @@ export function GlobalsDealFieldsForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 max-w-lg">
-        <FieldSelect
+        <SearchableDealFieldSelect
           id="status-document-field"
           label="Status Documento D4Sign"
           hint="Campo do Deal onde o status do documento será gravado (ex.: Aguardando assinatura, Finalizado)."
@@ -125,13 +85,14 @@ export function GlobalsDealFieldsForm({
           fields={dealFields}
         />
 
-        <FieldSelect
+        <SearchableDealFieldSelect
           id="attach-document-field"
           label="Anexo Documento D4Sign"
           hint="Campo do Deal (tipo arquivo) onde o PDF assinado será anexado após a conclusão."
           value={attachField}
           onChange={setAttachField}
           fields={attachOptions}
+          placeholder="Buscar campo de arquivo…"
         />
 
         <Button type="button" variant="accent" onClick={() => void save()} disabled={loading}>
