@@ -68,16 +68,6 @@ export default async function GlobalsPage({
           </CardContent>
         </Card>
       )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Webhook D4Sign</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-1">
-          <p>O webhook é configurado <strong>automaticamente</strong> em cada documento gerado pelo robô BizProc.</p>
-          <p className="text-xs">Nenhuma configuração manual é necessária.</p>
-        </CardContent>
-      </Card>
     </AppShell>
   );
 }

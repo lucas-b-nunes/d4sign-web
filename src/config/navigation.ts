@@ -70,5 +70,4 @@ export const settingsNav = [
   { slug: "connection", label: "Conexão Bitrix" },
   { slug: "credentials", label: "Credenciais D4Sign" },
   { slug: "globals", label: "Parâmetros globais" },
-  { slug: "preferences", label: "Preferências" },
 ] as const;
